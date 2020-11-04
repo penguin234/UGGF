@@ -1,0 +1,113 @@
+<html>
+    <head>
+        <title>
+            랜덤 엄준식 생성기
+        </title>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    
+        <style>
+            .outer-divs {
+                overflow: hidden;
+            }
+
+            .hori-stack-divs {
+                float: left;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="app">
+            <div v-if="mode=='editing'" class="outer-divs">
+                <div v-for="(modifier, index) in modifiers" class="hori-stack-divs">
+                    <modifier-editer :index="index" :modifier="modifier">
+
+                    </modifier-editer>
+                </div>
+            </div>
+            
+            <div v-if="mode=='testing'" class="outer-divs">
+                <div v-for="(modifier, index) in modifiers" class="hori-stack-divs">
+                    {{ modifier.type }}
+                    <br>
+                    {{ modifier.content }}
+                </div>
+            </div>
+
+            <div>
+                <button v-on:click="switchMode"> {{ mode }} </button>
+            </div>
+        </div>
+
+
+        <script>
+            Vue.component('random-modifier-editer' {
+                props: ['']
+            });
+
+
+            Vue.component('modifier-editer', {
+                props: ['modifier', 'index'],
+                data: function() {
+                    return {
+                        type: 'fixed',
+                    };
+                },
+                watch: {
+                    type: function(val) {
+                        if (this.modifier) {
+                            this.modifier.type = this.type;
+                        }
+                    },
+                    modifier: function(val) {
+                        this.type = val.type;
+                    },
+                },
+                created: function() {
+                    if (this.modifier) {
+                        this.type = this.modifier.type;
+                    }
+                },
+                template: `
+                    <div>
+                        <input type="radio" :id="String(index)+'r'" value="random" v-model="type">
+                        <label :for="String(index)+'r'">랜덤</label>
+                        <input type="radio" :id="String(index)+'f'" value="fixed" v-model="type">
+                        <label :for="String(index)+'f'">고정</label>
+                    </div>
+                `,
+            });
+
+
+            const app = new Vue({
+                el: '#app',
+                data: {
+                    mode: 'editing',
+                    modifiers: [
+                        {
+                            type: 'random',
+                        },
+                        {
+                            type: 'fixed',
+                            content: '도둑'
+                        },
+                        {
+                            type: 'fixed',
+                        },
+                    ],
+                },
+                methods: {
+                    switchMode: function() {
+                        if (this.mode == 'editing') {
+                            this.mode = 'testing';
+                        }
+                        else if (this.mode == 'testing') {
+                            this.mode = 'editing';
+                        }
+                    },
+                },
+            });
+        </script>
+    </body>
+</html>
