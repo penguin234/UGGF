@@ -14,18 +14,22 @@
             .hori-stack-divs {
                 float: left;
             }
+
+            .modifier-holder-move {
+                transition: transform 1s;
+            }
         </style>
     </head>
 
     <body>
         <div id="app">
-            <div v-if="mode=='editing'" class="outer-divs">
-                <div v-for="(modifier, index) in modifiers" class="hori-stack-divs">
-                    <modifier-editer :index="index" :modifier="modifier">
+            <transition-group name="modifier-holder" v-if="mode=='editing'" class="outer-divs" tag="div">
+                <div v-for="(modifier, index) in modifiers" :key="modifier.id" class="hori-stack-divs">
+                    <modifier-editer :index="index" :modifier="modifier" @swap="swap">
 
                     </modifier-editer>
                 </div>
-            </div>
+            </transition-group>
             
             <div v-if="mode=='testing'" class="outer-divs">
                 <div v-for="(modifier, index) in modifiers" class="hori-stack-divs">
@@ -36,13 +40,13 @@
             </div>
 
             <div>
-                <button v-on:click="switchMode"> {{ mode }} </button>
+                <button @click="switchMode"> {{ mode }} </button>
             </div>
         </div>
 
 
         <script>
-            Vue.component('random-modifier-editer' {
+            Vue.component('random-modifier-editer', {
                 props: ['']
             });
 
@@ -53,6 +57,14 @@
                     return {
                         type: 'fixed',
                     };
+                },
+                methods: {
+                    rightMove: function() {
+                        this.$emit('swap', this.index, this.index+1);
+                    },
+                    leftMove: function() {
+                        this.$emit('swap', this.index, this.index-1);
+                    },
                 },
                 watch: {
                     type: function(val) {
@@ -71,6 +83,10 @@
                 },
                 template: `
                     <div>
+                        <button @click="leftMove"><</button>
+                        <button @click="rightMove">></button>
+                        <br>
+
                         <input type="radio" :id="String(index)+'r'" value="random" v-model="type">
                         <label :for="String(index)+'r'">랜덤</label>
                         <input type="radio" :id="String(index)+'f'" value="fixed" v-model="type">
@@ -86,13 +102,16 @@
                     mode: 'editing',
                     modifiers: [
                         {
+                            id: 0,
                             type: 'random',
                         },
                         {
+                            id: 1,
                             type: 'fixed',
                             content: '도둑'
                         },
                         {
+                            id: 2,
                             type: 'fixed',
                         },
                     ],
@@ -105,6 +124,29 @@
                         else if (this.mode == 'testing') {
                             this.mode = 'editing';
                         }
+                    },
+                    swap: function(a, b) {
+                        const rule = this.modifiers.length;
+
+                        if (a < 0) {
+                            a += rule;
+                        }
+                        else if (a >= rule) {
+                            a -= rule;
+                        }
+
+                        if (b < 0) {
+                            b += rule;
+                        }
+                        else if (b >= rule) {
+                            b -= rule;
+                        }
+
+                        let temp = this.modifiers[a];
+                        this.modifiers[a] = this.modifiers[b];
+                        this.modifiers[b] = temp;
+
+                        this.modifiers.splice();
                     },
                 },
             });
