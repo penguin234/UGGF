@@ -15,106 +15,111 @@
                 float: left;
             }
 
+            .modifier-holder-enter-active, .modifier-holder-leave-active {
+                transition: all 1s;
+            }
+
+            .modifier-holder-enter, .modifier-holder-leave-to {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+
             .modifier-holder-move {
                 transition: transform 1s;
             }
         </style>
+
+        <script src="editing/fixed-editor.js"></script>
+        <link rel="stylesheet" href="editing/random-editor.css">
+        <script src="editing/random-editor.js"></script>
+        <script src="editing/editor-selector.js"></script>
+
+        <script src="running/generator.js"></script>
+        <script src="running/result-viewer.js"></script>
     </head>
 
     <body>
         <div id="app">
-            <transition-group name="modifier-holder" v-if="mode=='editing'" class="outer-divs" tag="div">
-                <div v-for="(modifier, index) in modifiers" :key="modifier.id" class="hori-stack-divs">
-                    <modifier-editer :index="index" :modifier="modifier" @swap="swap">
-
-                    </modifier-editer>
-                </div>
-            </transition-group>
-            
-            <div v-if="mode=='testing'" class="outer-divs">
-                <div v-for="(modifier, index) in modifiers" class="hori-stack-divs">
-                    {{ modifier.type }}
-                    <br>
-                    {{ modifier.content }}
-                </div>
-            </div>
-
             <div>
                 <button @click="switchMode"> {{ mode }} </button>
+            </div>
+
+            <div v-if="mode=='editing'">
+                <transition-group name="modifier-holder" class="outer-divs" tag="div">
+                    <div v-for="(modifier, index) in modifiers" :key="modifier.id" class="hori-stack-divs">
+                        <modifier-editer :index="index" :modifier="modifier" @swap="swap" @remove="remove" @selected="select">
+
+                        </modifier-editer>
+                    </div>
+
+                    <div :key="-1" class="hori-stack-divs">
+                        <button @click="add"> + </button>
+                        <br>
+
+                        <input type="radio" id="r" value="random" v-model="nextType">
+                        <label for="r">랜덤</label>
+                        <br>
+                        <input type="radio" id="f" value="fixed" v-model="nextType">
+                        <label for="f">고정</label>
+                    </div>
+                </transition-group>
+
+                <template v-if="curr">
+                    <random-modifier-editor v-if="curr.type=='random'" :modifier="curr">
+                        
+                    </random-modifier-editor>
+                    <fixed-modifier-editor v-if="curr.type=='fixed'" :modifier="curr">
+                        
+                    </fixed-modifier-editor>
+                </template>
+            </div>
+            
+            <div v-if="mode=='testing'" class="outer-divs">
+                <result-viewer :modifiers="modifiers">
+
+                </result-viewer>
             </div>
         </div>
 
 
         <script>
-            Vue.component('random-modifier-editer', {
-                props: ['']
-            });
-
-
-            Vue.component('modifier-editer', {
-                props: ['modifier', 'index'],
-                data: function() {
-                    return {
-                        type: 'fixed',
-                    };
-                },
-                methods: {
-                    rightMove: function() {
-                        this.$emit('swap', this.index, this.index+1);
-                    },
-                    leftMove: function() {
-                        this.$emit('swap', this.index, this.index-1);
-                    },
-                },
-                watch: {
-                    type: function(val) {
-                        if (this.modifier) {
-                            this.modifier.type = this.type;
-                        }
-                    },
-                    modifier: function(val) {
-                        this.type = val.type;
-                    },
-                },
-                created: function() {
-                    if (this.modifier) {
-                        this.type = this.modifier.type;
-                    }
-                },
-                template: `
-                    <div>
-                        <button @click="leftMove"><</button>
-                        <button @click="rightMove">></button>
-                        <br>
-
-                        <input type="radio" :id="String(index)+'r'" value="random" v-model="type">
-                        <label :for="String(index)+'r'">랜덤</label>
-                        <input type="radio" :id="String(index)+'f'" value="fixed" v-model="type">
-                        <label :for="String(index)+'f'">고정</label>
-                    </div>
-                `,
-            });
-
-
             const app = new Vue({
                 el: '#app',
                 data: {
                     mode: 'editing',
+                    nextId: 4,
+                    nextType: 'fixed',
                     modifiers: [
                         {
                             id: 0,
                             type: 'random',
+                            content: ['과일가게', '생선가게', '노래방'],
                         },
                         {
                             id: 1,
-                            type: 'fixed',
-                            content: '도둑'
+                            type: 'random',
+                            content: ['사과', '참치', '마이크', '생수'],
                         },
                         {
                             id: 2,
                             type: 'fixed',
+                            content: '도둑',
+                        },
+                        {
+                            id: 3,
+                            type: 'fixed',
+                            content: '엄준식',
                         },
                     ],
+                    currindex: -1,
+                },
+                computed: {
+                    curr: function() {
+                        if (this.currindex==-1 || this.currindex>=this.modifiers.length) {
+                            return null;
+                        }
+                        return this.modifiers[this.currindex];
+                    },
                 },
                 methods: {
                     switchMode: function() {
@@ -148,6 +153,30 @@
 
                         this.modifiers.splice();
                     },
+                    add: function() {
+                        let content = null;
+                        if (this.nextType == 'fixed') {
+                            content = 'empty';
+                        }
+                        if (this.nextType == 'random') {
+                            content = [];
+                        }
+
+                        let modifier = {
+                            id: this.nextId++,
+                            type: this.nextType,
+                            content: content,
+                        };
+
+                        this.modifiers.push(modifier);
+                    },
+                    remove: function(index) {
+                        this.modifiers.splice(index, 1);
+                    },
+                    select: function(index) {
+                        this.currindex=index;
+                    },
+                    generate: Generate,
                 },
             });
         </script>

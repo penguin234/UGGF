@@ -1,0 +1,12 @@
+.value-holder-enter-active, .value-holder-leave-active {
+    transition: all 1s;
+}
+
+.value-holder-enter, .value-holder-leave-to {
+    opacity: 0;
+    transform: translateX(100px);
+}
+
+.value-holder-move {
+    transition: transform 1s;
+}
