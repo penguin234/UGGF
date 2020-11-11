@@ -15,6 +15,14 @@
                 float: left;
             }
 
+            .random-editor {
+                background-color: blue;
+            }
+
+            .fixed-editor {
+                background-color: green;
+            }
+
             .modifier-holder-enter-active, .modifier-holder-leave-active {
                 transition: all 1s;
             }
@@ -46,7 +54,7 @@
 
             <div v-if="mode=='editing'">
                 <transition-group name="modifier-holder" class="outer-divs" tag="div">
-                    <div v-for="(modifier, index) in modifiers" :key="modifier.id" class="hori-stack-divs">
+                    <div v-for="(modifier, index) in modifiers" :key="modifier.id" class="hori-stack-divs" :class="{'random-editor': modifier.type=='random', 'fixed-editor': modifier.type=='fixed'}">
                         <modifier-editer :index="index" :modifier="modifier" @swap="swap" @remove="remove" @selected="select">
 
                         </modifier-editer>
